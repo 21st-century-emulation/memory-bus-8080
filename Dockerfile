@@ -4,6 +4,7 @@ RUN USER=root cargo new --bin memory-bus-8080
 WORKDIR /memory-bus-8080
 COPY ./Cargo.lock ./Cargo.toml ./
 RUN cargo build --release
+RUN cargo build
 RUN rm src/*.rs
 COPY ./src ./src
 RUN rm -f ./target/release/deps/memory_bus_8080*
