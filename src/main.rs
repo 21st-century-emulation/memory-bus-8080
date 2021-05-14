@@ -18,7 +18,7 @@ struct InMemoryState {
 #[derive(Deserialize, Serialize)]
 struct Rom {
     id: String,
-    program_state: String
+    #[serde(rename = "programState")] program_state: String
 }
 
 #[post("/initialise", format = "json", data = "<rom>")]
