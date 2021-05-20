@@ -5,8 +5,8 @@ extern crate base64;
 extern crate rocket;
 extern crate serde;
 
+use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
-use std::sync::RwLock;
 use std::collections::HashMap;
 use rocket::State;
 use rocket_contrib::json::Json;
@@ -23,13 +23,13 @@ struct Rom {
 
 #[post("/initialise", format = "json", data = "<rom>")]
 fn initialise(rom: Json<Rom>, in_memory_state: State<InMemoryState>) {
-    let mut writer = in_memory_state.state.write().unwrap();
+    let mut writer = in_memory_state.state.write();
     writer.insert(rom.id.clone(), base64::decode(rom.program_state.clone()).unwrap());
 }
 
 #[post("/writeByte?<id>&<address>&<value>")]
 fn write_byte(id: String, address: u16, value: u8, in_memory_state: State<InMemoryState>) -> () {
-    let mut writer = in_memory_state.state.write().unwrap();
+    let mut writer = in_memory_state.state.write();
     let rom = writer.get_mut(&id).unwrap();
 
     rom[address as usize] = value;
@@ -37,13 +37,13 @@ fn write_byte(id: String, address: u16, value: u8, in_memory_state: State<InMemo
 
 #[get("/readByte?<id>&<address>")]
 fn read_byte(id: String, address: u16, in_memory_state: State<InMemoryState>) -> String {
-    let reader = in_memory_state.state.read().unwrap();
+    let reader = in_memory_state.state.read();
     format!("{}", reader.get(&id).unwrap()[address as usize])
 }
 
 #[get("/readRange?<id>&<address>&<length>")]
 fn read_range(id: String, address: u16, length: u16, in_memory_state: State<InMemoryState>) -> String {
-    let reader = in_memory_state.state.read().unwrap();
+    let reader = in_memory_state.state.read();
     let data = reader.get(&id).unwrap();
     let address_range = (address as usize)..(address as usize + length as usize);
     format!("{}", base64::encode(&data[address_range]))
